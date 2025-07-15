@@ -701,16 +701,19 @@ public void PrintMapInfo(int client, const char[] map)
 
 	char sType[32];
 	char sStageInfo[32];
+	char sAltStageInfo[32];
 
 	if(mapinfo.iType == 1)
 	{
 		FormatEx(sType, 16, "Staged");
 		FormatEx(sStageInfo, 16, "%d Stages", mapinfo.iStages);
+		FormatEx(sAltStageInfo, 16, "Number of Stages: %d", mapinfo.iStages);
 	}
 	else
 	{
 		FormatEx(sType, 16, "Linear");
 		FormatEx(sStageInfo, 16, "%d Checkpoint%s", mapinfo.iCheckpoints, mapinfo.iCheckpoints > 2 ? "s":"");
+		FormatEx(sAltStageInfo, 32, "Number of Checkpoints: %d", mapinfo.iCheckpoints);
 	}
 
 	char sTrackInfo[32];
@@ -719,11 +722,54 @@ public void PrintMapInfo(int client, const char[] map)
 	char sTier[8];
 	FormatEx(sTier, 8, "Tier %d", mapinfo.iTier);
 
+	Menu mapmenu = new Menu(MenuHandler_MapInfoShowMore);
+
+	char idk[512];
+
+	FormatEx(idk, sizeof(idk),
+		"Map Info: %s\n"...
+		"-------------------------------\n"...
+		"Map Type: %s\n"...
+		"Tier: %d\n"...
+		"%s\n"...
+		"Number of Bonuses: %d\n"...
+		"-------------------------------\n",
+		map,
+		sType,
+		mapinfo.iTier,
+		sAltStageInfo,
+		mapinfo.iBonuses
+		);
+
+	mapmenu.SetTitle(idk);
+	mapmenu.AddItem("-1", "", ITEMDRAW_IGNORE);
+	mapmenu.AddItem("blorpa", "View more map info in browser.");
+	mapmenu.Display(client, 1000);
+
 	Shavit_PrintToChat(client, "Map: %s%s%s - %s | %s%s%s | %s%s%s | %s%s%s |",
 		gS_ChatStrings.sVariable2, map, gS_ChatStrings.sText, sType,
 		gS_ChatStrings.sVariable, sTier, gS_ChatStrings.sText,
 		gS_ChatStrings.sVariable, sStageInfo, gS_ChatStrings.sText,
 		gS_ChatStrings.sVariable, sTrackInfo, gS_ChatStrings.sText);		
+}
+
+
+public int MenuHandler_MapInfoShowMore(Menu menu, MenuAction action, int param1, int param2) {
+	if (action == MenuAction_End)
+	{
+		delete menu;
+	}
+	else if (action == MenuAction_Select)
+	{
+		char info[32];	
+		menu.GetItem(param2, info, sizeof(info));
+		if (StrEqual(info, "blorpa"))
+		{
+			ShowMOTDPanel(param1, gS_Map, "https://thethunderdome.net", MOTDPANEL_TYPE_URL);
+		}
+	}
+
+	return 0;
 }
 
 public int MenuHandler_MapInfoMatches(Menu menu, MenuAction action, int param1, int param2)
